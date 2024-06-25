@@ -1,6 +1,7 @@
 """
 Main Application for Inventory App
 """
+
 from django.apps import AppConfig
 
 

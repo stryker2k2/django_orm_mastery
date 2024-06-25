@@ -22,9 +22,13 @@ Run Django Server\
     - Customers App
     - Checkout App
 
-### Migrations (sqlite3)
+### Migrations & Management (sqlite3)
 `$ python3 manage.py makemigrations`\
-`$ python3 manage.py migrate`
+`$ python3 manage.py migrate`\
+`$ python3 manage.py showmigrations --list`\
+`$ python3 manage.py migrate inventory 0002_alter_attribute_name`\
+`$ python3 manage.py migrate inventory zero`\
+`$ python3 manage.py createsuperuser`
 
 ### VSCode Extensions
 - SQLite

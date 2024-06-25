@@ -1,9 +1,11 @@
 """
     Database Models
 """
+
 import uuid
 
 from django.db import models
+from django.utils.text import slugify
 
 
 class Product(models.Model):
@@ -73,10 +75,33 @@ class Category(models.Model):
     Category Database Model
     """
 
-    name = models.CharField(max_length=100)
-    slug = models.SlugField(unique=True)
+    name = models.CharField(
+        max_length=100,
+        unique=True,
+        verbose_name="Category Name",
+        help_text="Enter a category")
+    slug = models.SlugField(unique=True, null=True, blank=True)
     is_active = models.BooleanField(default=False)
-    parent_category = models.ForeignKey("self", on_delete=models.PROTECT)
+    parent_category = models.ForeignKey(
+        "self", on_delete=models.PROTECT, null=True, blank=True
+    )
+
+    class Meta:
+        """
+        Meta Class is a Django Built-In Class to modify Parent Class Metadata
+        """
+        verbose_name = "Inventory Category"
+        verbose_name_plural = "Categories"
+
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = slugify(self.name)
+        super().save(*args, **kwargs)
+
+
+    # Return self.name to caller function (ex: admin portal)
+    def __str__(self):
+        return str(self.name)
 
 
 class SeasonalEvent(models.Model):
@@ -104,7 +129,7 @@ class Attribute(models.Model):
     Attribute Database Model
     """
 
-    name = models.CharField(max_length=100)
+    name = models.CharField(max_length=200)
     description = models.TextField(null=True)
 
 

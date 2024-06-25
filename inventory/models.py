@@ -25,20 +25,29 @@ class Product(models.Model):
 
     pid = models.CharField(max_length=255)
     name = models.CharField(max_length=100, unique=True)
-    slug = models.SlugField(unique=True)
+    slug = models.SlugField(unique=True, blank=True)
     description = models.TextField(null=True)
     is_digital = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True, editable=False)
+    updated_at = models.DateTimeField(auto_now=True)
     is_active = models.BooleanField(default=False)
     stock_status = models.CharField(
         max_length=3, choices=STOCK_STATUS, default=OUT_OF_STOCK
     )
     category = models.ForeignKey("Category", on_delete=models.SET_NULL, null=True)
     seasonal_event = models.ForeignKey(
-        "SeasonalEvent", on_delete=models.SET_NULL, null=True
+        "SeasonalEvent", on_delete=models.SET_NULL, null=True, blank=True
     )
     product_type = models.ManyToManyField("ProductType", related_name="product_type")
+
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = slugify(self.name)
+        super().save(*args, **kwargs)
+
+    # Return self.name to caller function (ex: admin portal)
+    def __str__(self):
+        return str(self.name)
 
 
 class ProductLine(models.Model):
@@ -54,7 +63,7 @@ class ProductLine(models.Model):
     weight = models.FloatField()
     product = models.ForeignKey("Product", on_delete=models.PROTECT)
     attribute_values = models.ManyToManyField(
-        "Attribute", related_name="attribute_values"
+        "AttributeValue", related_name="attribute_values"
     )
 
 
@@ -63,8 +72,7 @@ class ProductImage(models.Model):
     ProductImage Database Model
     """
 
-    name = models.CharField(max_length=100)
-    alternative_text = models.CharField(max_length=100)
+    alternative_text = models.CharField(max_length=200)
     url = models.ImageField()
     order = models.IntegerField()
     product_line = models.ForeignKey("ProductLine", on_delete=models.CASCADE)
@@ -79,25 +87,24 @@ class Category(models.Model):
         max_length=100,
         unique=True,
         verbose_name="Category Name",
-        help_text="Enter a category")
-    slug = models.SlugField(unique=True, null=True, blank=True)
-    is_active = models.BooleanField(default=False)
-    parent_category = models.ForeignKey(
-        "self", on_delete=models.PROTECT, null=True, blank=True
+        help_text="Enter a category",
     )
+    slug = models.SlugField(unique=True, blank=True)
+    is_active = models.BooleanField(default=False)
+    parent = models.ForeignKey("self", on_delete=models.PROTECT, null=True, blank=True)
 
     class Meta:
         """
         Meta Class is a Django Built-In Class to modify Parent Class Metadata
         """
-        verbose_name = "Inventory Category"
+
+        verbose_name = "Category"
         verbose_name_plural = "Categories"
 
     def save(self, *args, **kwargs):
         if not self.slug:
             self.slug = slugify(self.name)
         super().save(*args, **kwargs)
-
 
     # Return self.name to caller function (ex: admin portal)
     def __str__(self):
@@ -114,14 +121,8 @@ class SeasonalEvent(models.Model):
     end_date = models.DateTimeField()
     name = models.CharField(max_length=100, unique=True)
 
-
-class AttributeValue(models.Model):
-    """
-    AttributeValue Database Model
-    """
-
-    attribute_value = models.CharField(max_length=100)
-    attribute = models.ForeignKey("Attribute", on_delete=models.CASCADE)
+    def __str__(self):
+        return str(self.name)
 
 
 class Attribute(models.Model):
@@ -132,6 +133,21 @@ class Attribute(models.Model):
     name = models.CharField(max_length=200)
     description = models.TextField(null=True)
 
+    def __str__(self):
+        return str(self.name)
+
+
+class AttributeValue(models.Model):
+    """
+    AttributeValue Database Model
+    """
+
+    attribute_value = models.CharField(max_length=100)
+    attribute = models.ForeignKey(Attribute, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f"{self.attribute.name}: {self.attribute_value}"
+
 
 class ProductType(models.Model):
     """
@@ -139,7 +155,19 @@ class ProductType(models.Model):
     """
 
     name = models.CharField(max_length=100)
-    parent = models.ForeignKey("self", on_delete=models.CASCADE)
+    parent = models.ForeignKey("self", on_delete=models.PROTECT, null=True, blank=True)
+
+    class Meta:
+        """
+        Meta Class is a Django Built-In Class to modify Parent Class Metadata
+        """
+
+        verbose_name = "Product Type"
+        verbose_name_plural = "Product Types"
+
+    # Return self.name to caller function (ex: admin portal)
+    def __str__(self):
+        return str(self.name)
 
 
 class ProductLine_AttributeValue(models.Model):

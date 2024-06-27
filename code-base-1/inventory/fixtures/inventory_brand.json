@@ -1,0 +1,26 @@
+[
+    {
+        "model": "inventory.brand",
+        "pk": 1,
+        "fields": {
+            "name": "nike",
+            "nickname": "nike"
+        }
+    },
+    {
+        "model": "inventory.brand",
+        "pk": 2,
+        "fields": {
+            "name": "nike2",
+            "nickname": "nike2"
+        }
+    },
+    {
+        "model": "inventory.brand",
+        "pk": 3,
+        "fields": {
+            "name": "nike3",
+            "nickname": "nike3"
+        }
+    }
+]

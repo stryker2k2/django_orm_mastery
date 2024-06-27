@@ -291,7 +291,12 @@ Category.objects.all().delete()
 Stock.objects.all().delete()
 reset_queries()
 
+# see inventory/fixtures/inventory_brand.json
 $ python3 manage.py loaddata inventory_brand
-# > Installed 2 object(s) from 1 fixture(s)
 
+# see inventory/management/commands/addfixtures.py
+
+$ python3 manage.py loaddata inventory_brand
+  > Installed 2 object(s) from 1 fixture(s)
+$ python3 manage.py dumpdata inventory.brand --indent 2 > db.json
 

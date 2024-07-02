@@ -72,6 +72,7 @@ class Brand(models.Model):
         max_length=255,
         # unique=True,
     )
+    nickname = models.CharField(max_length=100, null=True)
 
     def __str__(self):
         return self.name

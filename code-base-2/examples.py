@@ -118,3 +118,42 @@ print(x.values())
 x = ProductInventory.objects.filter(product_id__category_id__id=8)
 print(x.values())
 
+### Exercise 115 - Exercise 117 (skip) ###
+
+## Exercise 120 ###
+from ecommerce.inventory.models import Brand, Product, ProductInventory, Media
+Brand.objects.filter(id=1).update(name="newdata")
+Brand.objects.filter(id__range=(1,5)).update(name="newdata")
+Brand.objects.update_or_create(name="strykersoft")  # returns true if created, false if updated
+# added nickname to models.py -> Brand then migrated
+Brand.objects.update_or_create(name="veryacademy", nickname="new")   # returns true if created, false if updated
+
+# Force 'update' cuz sometimes it will just create a new record instead of updating
+Brand.objects.update_or_create(name="veryacademy", nickname="new", defaults={"nickname":"newnickname"})
+
+### Exercise 122 (bulk update) ###
+obj = [Brand.objects.get(id=1),Brand.objects.get(id=2)]
+obj[0].name="something"
+obj[1].name="somethingelse"
+Brand.objects.bulk_update(obj, ["name"])
+
+data = [(1,'a'), (2,'b')]
+id_set = [id for id, name in data]      # prints [1, 2]
+brand_to_update = Brand.objects.filter(id__in=id_set)     # bulk update with __in
+>>> print(brand_to_update)              # <QuerySet [<Brand: something>, <Brand: somethingelse>]>
+
+new_update = []
+for brand in brand_to_update:
+    brand.name = next(name for id, name in data if id == brand.id)
+    new_update.append(brand)
+    print(brand.name)       # a then b
+print(new_update)           # [<Brand: a>, <Brand: b>]
+print(new_update[0].id)     # 1
+
+Brand.objects.bulk_update(new_update, ['name'])
+# id 1 and id 2 have successfully updated in the database to be 'a' and 'b'
+
+### Exercise 125 (Deleting) ###
+from ecommerce.inventory.models import Brand
+Brand.objects.filter(id=1).delete()     # (1, {'inventory.Brand': 1})
+Brand.objects.all().delete()            # (22, {'inventory.Brand': 22})
